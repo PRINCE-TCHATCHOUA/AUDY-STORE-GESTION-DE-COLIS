@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AUDY STORE — Colis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #1a1a1a;
+      --gold: #C9A961;
+      --gold-light: #e8d5a3;
+      --cream: #faf8f4;
+      --white: #ffffff;
+      --muted: #7a7470;
+      --border: #e5e0d8;
+      --success: #3a7c5e;
+      --danger: #c0392b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--cream); color: var(--ink); font-family: 'DM Sans', sans-serif; font-weight: 300; min-height: 100vh; }
+
+    /* HEADER */
+    header { background: var(--ink); padding: 18px 32px; display: flex; align-items: center; justify-content: space-between; }
+    header .brand { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 600; color: var(--gold); letter-spacing: 3px; text-transform: uppercase; }
+    header .subtitle { font-size: 11px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+    .header-badges { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+    .badge-encours { font-size: 12px; color: var(--gold-light); background: rgba(201,169,97,0.12); border: 1px solid rgba(201,169,97,0.3); padding: 5px 14px; border-radius: 20px; letter-spacing: 1px; }
+    .badge-retire  { font-size: 12px; color: #c9a0f0; background: rgba(155,89,182,0.12); border: 1px solid rgba(155,89,182,0.3); padding: 5px 14px; border-radius: 20px; letter-spacing: 1px; }
+    .badge-aexpedier { font-size: 12px; color: #d68a2c; background: rgba(230,150,40,0.14); border: 1px solid rgba(230,150,40,0.35); padding: 5px 14px; border-radius: 20px; letter-spacing: 1px; }
+    .sync-indicator { font-size: 11px; color: var(--muted); background: var(--white); border: 1px solid var(--border); padding: 5px 14px; border-radius: 20px; letter-spacing: 0.5px; cursor: pointer; }
+    .sync-indicator.sync-pending { color: #d68a2c; border-color: rgba(230,150,40,0.35); }
+    .sync-indicator.sync-error { color: #c0392b; border-color: rgba(192,57,43,0.35); }
+
+    /* ALERT BANNER */
+    .alert-banner { background: #fdf1de; border-bottom: 1px solid rgba(230,150,40,0.35); padding: 12px 32px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .alert-banner .alert-text { font-size: 13px; color: #8a5a12; font-weight: 500; letter-spacing: 0.3px; }
+    .alert-actions { display: flex; align-items: center; gap: 10px; }
+    .alert-close { background: none; border: none; color: #8a5a12; font-size: 17px; cursor: pointer; opacity: 0.6; line-height: 1; }
+    .alert-close:hover { opacity: 1; }
+
+    /* TABS */
+    .tabs { display: flex; background: var(--ink); border-top: 1px solid rgba(255,255,255,0.06); }
+    .tab { padding: 12px 28px; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
+    .tab:hover { color: var(--gold-light); }
+    .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+    /* LAYOUT */
+    .container { max-width: 1020px; margin: 0 auto; padding: 36px 24px 80px; }
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* CARD */
+    .card { background: var(--white); border: 1px solid var(--border); border-radius: 2px; padding: 32px 36px; margin-bottom: 28px; }
+    .card-title { font-family: 'Cormorant Garamond', serif; font-size: 19px; font-weight: 600; letter-spacing: 1px; margin-bottom: 24px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+
+    /* FORM */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+    .form-row.full { grid-template-columns: 1fr; }
+    .form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+    label { display: block; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
+    input, select, textarea { width: 100%; background: var(--cream); border: 1px solid var(--border); border-radius: 1px; padding: 11px 13px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 400; color: var(--ink); outline: none; transition: border-color 0.2s; }
+    input:focus, select:focus, textarea:focus { border-color: var(--gold); }
+    textarea { resize: vertical; min-height: 68px; }
+
+    /* PHONE GROUP */
+    .phone-group { display: flex; gap: 0; }
+    .phone-group .dial-select { width: auto; min-width: 130px; max-width: 160px; border-right: none; border-radius: 1px 0 0 1px; font-size: 13px; padding: 11px 10px; flex-shrink: 0; background: var(--cream); }
+    .phone-group .dial-manual { width: 72px; border-left: none; border-right: none; border-radius: 0; font-size: 13px; padding: 11px 8px; text-align: center; flex-shrink: 0; display: none; }
+    .phone-group .dial-manual.visible { display: block; }
+    .phone-group .phone-input { border-radius: 0 1px 1px 0; flex: 1; }
+    .phone-group .dial-select:focus, .phone-group .dial-manual:focus, .phone-group .phone-input:focus { border-color: var(--gold); z-index: 1; position: relative; }
+
+
+    /* PHOTOS */
+    .photo-upload-zone { border: 1px dashed var(--border); border-radius: 2px; padding: 18px; background: var(--cream); cursor: pointer; transition: border-color 0.2s; }
+    .photo-upload-zone:hover { border-color: var(--gold); }
+    .photo-upload-zone input[type=file] { display: none; }
+    .photo-upload-label { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--muted); letter-spacing: 0.5px; cursor: pointer; }
+    .photo-upload-label .icon { font-size: 22px; opacity: 0.5; }
+    .photo-previews { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+    .photo-thumb-wrap { position: relative; width: 80px; height: 80px; }
+    .photo-thumb { width: 80px; height: 80px; object-fit: cover; border-radius: 2px; border: 1px solid var(--border); cursor: pointer; transition: opacity 0.15s; }
+    .photo-thumb:hover { opacity: 0.85; }
+    .photo-remove { position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 50%; background: #c0392b; color: #fff; border: none; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; }
+    /* Vignette dans le tableau */
+    .table-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 1px; border: 1px solid var(--border); cursor: pointer; display: block; }
+    .table-thumbs { display: flex; gap: 4px; }
+    /* Lightbox */
+    .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 2000; align-items: center; justify-content: center; }
+    .lightbox.open { display: flex; }
+    .lightbox img { max-width: 90vw; max-height: 85vh; border-radius: 2px; object-fit: contain; }
+    .lightbox-close { position: absolute; top: 20px; right: 28px; color: #fff; font-size: 28px; cursor: pointer; background: none; border: none; opacity: 0.7; }
+    .lightbox-close:hover { opacity: 1; }
+
+    .code-preview { padding: 22px 26px; background: var(--ink); border-radius: 2px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .code-label { font-size: 10px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 5px; }
+    .code-value { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 600; color: var(--gold); letter-spacing: 3px; word-break: break-all; }
+    .code-actions { display: flex; gap: 10px; flex-shrink: 0; }
+
+    /* BUTTONS */
+    .btn { cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; border: none; border-radius: 1px; padding: 10px 20px; transition: opacity 0.15s, transform 0.1s; }
+    .btn:active { transform: scale(0.97); }
+    .btn-gold { background: var(--gold); color: var(--ink); font-weight: 500; }
+    .btn-gold:hover { opacity: 0.88; }
+    .btn-outline { background: transparent; color: var(--gold-light); border: 1px solid rgba(201,169,97,0.4); }
+    .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+    .btn-primary { background: var(--ink); color: var(--white); border: 1px solid var(--ink); padding: 12px 28px; font-size: 12px; }
+    .btn-primary:hover { background: #2d2d2d; }
+    .btn-danger { background: transparent; color: #e57373; border: 1px solid rgba(192,57,43,0.3); padding: 5px 10px; font-size: 11px; }
+    .btn-danger:hover { background: rgba(192,57,43,0.08); }
+    .btn-retrait { background: var(--success); color: #fff; border: none; padding: 5px 12px; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; border-radius: 1px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+    .btn-retrait:hover { opacity: 0.85; }
+    .btn-sm { padding: 5px 10px; font-size: 10px; }
+
+    .generate-wrap { margin-top: 24px; display: flex; gap: 12px; align-items: center; }
+
+    /* STATUS */
+    .status-badge { display: inline-block; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; padding: 3px 9px; border-radius: 20px; font-weight: 500; }
+    .status-prepare   { background: #fff3cd; color: #856404; }
+    .status-aexpedier { background: #ffe1b3; color: #8a5a12; }
+    .status-alivrer   { background: #d6e4ff; color: #1d3f8a; }
+    .status-enroute   { background: #e5d9ff; color: #4527a0; }
+    .status-expedie   { background: #cfe2ff; color: #084298; }
+    .status-livre     { background: #d1e7dd; color: #0a3622; }
+    .status-retire    { background: #e9d5ff; color: #4a1a7a; }
+    select.status-select { font-size: 11px; padding: 5px 8px; width: auto; }
+
+    /* TABLE */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); font-weight: 400; }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background 0.12s; }
+    tbody tr:hover { background: #fdf9f2; }
+    tbody td { padding: 13px 14px; vertical-align: middle; }
+    .td-code { font-family: 'Cormorant Garamond', serif; font-size: 14px; font-weight: 600; color: var(--gold); letter-spacing: 1px; white-space: nowrap; }
+    .td-name { font-weight: 500; white-space: nowrap; }
+    .td-date { color: var(--muted); font-size: 12px; white-space: nowrap; }
+    .td-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .td-retrait-info { font-size: 11px; color: #4a1a7a; }
+
+    /* CLIENT VIEW */
+    .client-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+    .client-card { background: var(--white); border: 1px solid var(--border); border-radius: 2px; padding: 20px 22px; cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s; }
+    .client-card:hover { border-color: var(--gold); box-shadow: 0 2px 12px rgba(201,169,97,0.12); }
+    .client-card .cn { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+    .client-card .cp { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+    .client-card .cstats { display: flex; gap: 10px; flex-wrap: wrap; }
+    .cstat { font-size: 11px; padding: 3px 9px; border-radius: 20px; letter-spacing: 0.5px; }
+    .cstat-total { background: var(--cream); border: 1px solid var(--border); color: var(--ink); }
+    .cstat-open  { background: #fff3cd; color: #856404; }
+    .cstat-done  { background: #d1e7dd; color: #0a3622; }
+
+    /* CLIENT DETAIL MODAL */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(10,10,10,0.65); z-index: 1000; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: var(--white); width: 90%; max-width: 780px; max-height: 85vh; overflow-y: auto; border-radius: 2px; }
+    .modal-header { background: var(--ink); padding: 22px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; }
+    .modal-header .mh-name { font-family: 'Cormorant Garamond', serif; font-size: 20px; color: var(--gold); letter-spacing: 2px; }
+    .modal-header .mh-phone { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .modal-close { background: none; border: none; color: var(--muted); font-size: 22px; cursor: pointer; line-height: 1; }
+    .modal-close:hover { color: var(--gold); }
+    .modal-body { padding: 24px 28px; }
+    .timeline { }
+    .tl-item { display: flex; gap: 16px; margin-bottom: 20px; }
+    .tl-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--gold); margin-top: 5px; flex-shrink: 0; }
+    .tl-line { width: 1px; background: var(--border); margin: 14px 0 0 4px; flex-shrink: 0; }
+    .tl-dot-wrap { display: flex; flex-direction: column; align-items: center; width: 10px; }
+    .tl-content { flex: 1; }
+    .tl-code { font-family: 'Cormorant Garamond', serif; font-size: 15px; font-weight: 600; color: var(--gold); letter-spacing: 1px; }
+    .tl-meta { font-size: 12px; color: var(--muted); margin: 3px 0 6px; }
+    .tl-ref { font-size: 13px; margin-bottom: 6px; }
+    .tl-retrait { font-size: 11px; color: #4a1a7a; background: #f3e8ff; padding: 4px 10px; border-radius: 2px; display: inline-block; margin-top: 4px; }
+    .tl-note { font-size: 12px; color: var(--muted); font-style: italic; margin-top: 4px; }
+    .tl-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+
+    /* RETRAIT MODAL */
+    .retrait-modal { display: none; position: fixed; inset: 0; background: rgba(10,10,10,0.65); z-index: 1100; align-items: center; justify-content: center; }
+    .retrait-modal.open { display: flex; }
+    .retrait-box { background: var(--white); width: 90%; max-width: 420px; border-radius: 2px; overflow: hidden; }
+    .retrait-header { background: var(--ink); padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; }
+    .retrait-header span { font-family: 'Cormorant Garamond', serif; font-size: 17px; color: var(--gold); letter-spacing: 1px; }
+    .retrait-body { padding: 24px; }
+    .retrait-body label { margin-bottom: 6px; }
+    .retrait-body input { margin-bottom: 16px; }
+    .retrait-confirm { display: flex; gap: 10px; margin-top: 8px; }
+    .sig-pad-wrap { border: 1px solid var(--border); border-radius: 2px; background: #fff; }
+    .sig-pad-wrap canvas { width: 100%; height: 120px; display: block; touch-action: none; cursor: crosshair; }
+
+    /* SOUS-ONGLETS COLIS */
+    .subtabs { display: flex; gap: 0; margin-bottom: 20px; border: 1px solid var(--border); border-radius: 2px; overflow-x: auto; width: fit-content; max-width: 100%; }
+    .subtab { padding: 9px 22px; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); cursor: pointer; background: var(--white); transition: all 0.15s; display: flex; align-items: center; gap: 8px; flex-shrink: 0; white-space: nowrap; }
+    .subtab + .subtab { border-left: 1px solid var(--border); }
+    .subtab:hover { background: #fdf9f2; color: var(--ink); }
+    .subtab.active { background: var(--ink); color: var(--gold); }
+    .subtab .stcount { font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 500; }
+    .subtab.active .stcount { background: rgba(201,169,97,0.2); color: var(--gold); }
+    .subtab:not(.active) .stcount { background: var(--border); color: var(--muted); }
+    .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 12px; flex-wrap: wrap; }
+    .section-title { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 600; letter-spacing: 1px; }
+    .search-wrap { flex: 1; max-width: 300px; }
+    .search-wrap input { padding: 9px 13px; font-size: 13px; }
+
+    /* EMPTY */
+    .empty-state { text-align: center; padding: 44px 24px; color: var(--muted); font-size: 14px; }
+    .empty-state .icon { font-size: 34px; margin-bottom: 10px; opacity: 0.4; }
+
+    /* TOAST */
+    #toast { position: fixed; bottom: 28px; right: 28px; background: var(--ink); color: var(--gold-light); font-size: 13px; padding: 11px 20px; border-left: 3px solid var(--gold); border-radius: 1px; opacity: 0; pointer-events: none; transition: opacity 0.25s; letter-spacing: 0.5px; z-index: 2000; }
+    #toast.show { opacity: 1; }
+
+    @media (max-width: 640px) {
+      .form-row, .form-row.three { grid-template-columns: 1fr; }
+      .code-preview { flex-direction: column; align-items: flex-start; }
+      .code-value { font-size: 17px; }
+      header { flex-direction: column; gap: 8px; text-align: center; }
+      .tabs { overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ ÉCRAN CODE D'ACCÈS ═══ -->
+<div id="accessGate" style="position:fixed;inset:0;background:var(--bg);z-index:9999;display:none;align-items:center;justify-content:center;padding:24px">
+  <div style="max-width:340px;width:100%;text-align:center">
+    <div style="font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:6px">AUDY STORE</div>
+    <h2 style="margin-bottom:24px;font-size:20px">Code d'accès</h2>
+    <input type="text" id="accessCodeInput" placeholder="Ex : AUDY-001" style="text-align:center;font-size:16px;margin-bottom:14px" onkeydown="if(event.key==='Enter')submitAccessCode()" />
+    <div id="accessGateMsg" style="font-size:12px;margin-bottom:14px;display:none"></div>
+    <button class="btn btn-primary" style="width:100%" onclick="submitAccessCode()">Valider</button>
+  </div>
+</div>
+
+<div id="appRoot" style="display:none">
+<header>
+  <div>
+    <div class="brand">Audy Store</div>
+    <div class="subtitle">Gestion des colis</div>
+  </div>
+  <div class="header-badges">
+    <div class="sync-indicator" id="syncIndicator" title="État de la synchronisation">🔄 Synchronisation…</div>
+    <div class="badge-aexpedier" id="badgeAExpedier">🟠 0 à expédier</div>
+    <div class="badge-encours" id="badgeEncours">📦 0 en cours</div>
+    <div class="badge-retire"  id="badgeRetire">✅ 0 retirés</div>
+  </div>
+</header>
+
+<div class="alert-banner" id="alertBanner" style="display:none">
+  <div class="alert-text" id="alertBannerText"></div>
+  <div class="alert-actions">
+    <button class="btn btn-outline btn-sm" onclick="goToAExpedier()">Voir</button>
+    <button class="alert-close" onclick="dismissBanner()">✕</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('nouveau')">Nouveau colis</div>
+  <div class="tab" onclick="switchTab('colis')">Tous les colis</div>
+  <div class="tab" onclick="switchTab('clients')">Clients</div>
+</div>
+
+<div class="container">
+
+  <!-- ═══ TAB : NOUVEAU COLIS ═══ -->
+  <div class="view active" id="view-nouveau">
+    <div class="card">
+      <div class="card-title">Nouveau colis</div>
+      <div class="form-row">
+        <div>
+          <label>Civilité</label>
+          <select id="clientCivilite">
+            <option value="M.">M.</option>
+            <option value="Mme">Mme</option>
+            <option value="Mlle">Mlle</option>
+          </select>
+        </div>
+        <div>
+          <label>Nom complet du client</label>
+          <input type="text" id="clientName" placeholder="Ex : El Prince" list="clientSuggestions" oninput="suggestClient()" />
+          <datalist id="clientSuggestions"></datalist>
+        </div>
+      </div>
+      <div class="form-row full">
+        <div>
+          <label>Téléphone</label>
+          <div class="phone-group">
+            <select class="dial-select" id="clientDial" onchange="toggleManualDial('clientDial','clientDialManual')">
+              <option value="+237">🇨🇲 +237</option>
+              <option value="+33">🇫🇷 +33</option>
+              <option value="+32">🇧🇪 +32</option>
+              <option value="+41">🇨🇭 +41</option>
+              <option value="+225">🇨🇮 +225</option>
+              <option value="+221">🇸🇳 +221</option>
+              <option value="+229">🇧🇯 +229</option>
+              <option value="+242">🇨🇬 +242</option>
+              <option value="+241">🇬🇦 +241</option>
+              <option value="+236">🇨🇫 +236</option>
+              <option value="+235">🇹🇩 +235</option>
+              <option value="+240">🇬🇶 +240</option>
+              <option value="+244">🇦🇴 +244</option>
+              <option value="+243">🇨🇩 +243</option>
+              <option value="+212">🇲🇦 +212</option>
+              <option value="+216">🇹🇳 +216</option>
+              <option value="+213">🇩🇿 +213</option>
+              <option value="+234">🇳🇬 +234</option>
+              <option value="+233">🇬🇭 +233</option>
+              <option value="+1">🇺🇸 +1</option>
+              <option value="+44">🇬🇧 +44</option>
+              <option value="+49">🇩🇪 +49</option>
+              <option value="+34">🇪🇸 +34</option>
+              <option value="+39">🇮🇹 +39</option>
+              <option value="+351">🇵🇹 +351</option>
+              <option value="+31">🇳🇱 +31</option>
+              <option value="+971">🇦🇪 +971</option>
+              <option value="+966">🇸🇦 +966</option>
+              <option value="+other">✏️ Autre…</option>
+            </select>
+            <input type="text" class="dial-manual" id="clientDialManual" placeholder="+XXX" maxlength="6" />
+            <input type="tel" class="phone-input" id="clientPhone" placeholder="6 12 34 56 78" />
+          </div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div>
+          <label>Référence / Contenu commande</label>
+          <input type="text" id="orderRef" placeholder="Ex : Robe noire — taille M" />
+        </div>
+        <div>
+          <label>Statut initial — Mode de remise</label>
+          <select id="statusSelect" onchange="toggleAgenceFields()">
+            <option value="prepare">Préparé (retrait en boutique)</option>
+            <option value="aexpedier">À expédier (transporteur)</option>
+            <option value="alivrer">À livrer (à domicile)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row" id="agenceFieldsRow" style="display:none">
+        <div>
+          <label>Agence de voyage</label>
+          <select id="agenceSelect" onchange="toggleAgenceAutre()">
+            <option value="">— Choisir —</option>
+            <option value="Finex Voyage">Finex Voyage</option>
+            <option value="Garantie Express">Garantie Express</option>
+            <option value="Global Voyage">Global Voyage</option>
+            <option value="Général Express">Général Express</option>
+            <option value="United Voyage">United Voyage</option>
+            <option value="Cerises Express">Cerises Express</option>
+            <option value="Buca Voyage">Buca Voyage</option>
+            <option value="Noblesse Voyage">Noblesse Voyage</option>
+            <option value="Nde Air Lines">Nde Air Lines</option>
+            <option value="Princesse Voyage">Princesse Voyage</option>
+            <option value="autre">Autre (préciser)</option>
+          </select>
+          <input type="text" id="agenceAutre" placeholder="Préciser l'agence…" style="margin-top:10px; display:none" />
+        </div>
+        <div>
+          <label>Ville de destination</label>
+          <input type="text" id="villeInput" placeholder="Ex : Douala" list="villesCameroun" autocomplete="off" />
+          <datalist id="villesCameroun"></datalist>
+        </div>
+      </div>
+      <div class="form-row full">
+        <div>
+          <label>Description de l'article (pour retrouver en magasin)</label>
+          <select id="descSelect" onchange="toggleDescAutre()">
+            <option value="">— Choisir —</option>
+            <option value="Plastique jaune">Plastique jaune</option>
+            <option value="Plastique noir">Plastique noir</option>
+            <option value="Plastique noir rayé">Plastique noir rayé</option>
+            <option value="Plastique blanc">Plastique blanc</option>
+            <option value="Sac vert">Sac vert</option>
+            <option value="Sac jaune">Sac jaune</option>
+            <option value="autre">Autre (préciser)</option>
+          </select>
+          <textarea id="descAutre" placeholder="Préciser la description…" style="margin-top:10px; display:none; min-height:60px"></textarea>
+        </div>
+      </div>
+      <div class="form-row full">
+        <div>
+          <label>Photos de l'article (max 3)</label>
+          <div class="photo-upload-zone" onclick="document.getElementById('photoInput').click()">
+            <label class="photo-upload-label">
+              <span class="icon">📷</span>
+              <span>Appuyer pour ajouter une photo — JPG, PNG, WEBP</span>
+            </label>
+            <input type="file" id="photoInput" accept="image/*" multiple onchange="handlePhotoUpload(this)" />
+          </div>
+          <div class="photo-previews" id="photoPreviews"></div>
+        </div>
+      </div>
+
+      <div class="form-row full">
+        <div>
+          <label>Note interne (optionnel)</label>
+          <textarea id="noteField" placeholder="Adresse, instructions spéciales…"></textarea>
+        </div>
+      </div>
+
+      <div class="code-preview" id="codePreviewBox" style="display:none">
+        <div>
+          <div class="code-label">Code colis généré</div>
+          <div class="code-value" id="codeDisplay">—</div>
+        </div>
+        <div class="code-actions">
+          <button class="btn btn-outline btn-sm" onclick="copyCode()">Copier</button>
+          <button class="btn btn-outline btn-sm" style="color:#25D366;border-color:rgba(37,211,102,0.4)" onclick="copyForSMS()">WhatsApp</button>
+        </div>
+      </div>
+
+      <div class="generate-wrap">
+        <button class="btn btn-primary" onclick="generateCode()">Générer le code</button>
+        <button class="btn btn-gold" onclick="saveColis()" id="saveBtn" style="display:none">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TAB : TOUS LES COLIS ═══ -->
+  <div class="view" id="view-colis">
+    <div class="top-bar">
+      <div class="subtabs">
+        <div class="subtab active" id="subtab-encours" onclick="switchSubtab('encours')">
+          En cours <span class="stcount" id="stcount-encours">0</span>
+        </div>
+        <div class="subtab" id="subtab-prepare" onclick="switchSubtab('prepare')">
+          Préparé <span class="stcount" id="stcount-prepare">0</span>
+        </div>
+        <div class="subtab" id="subtab-aexpedier" onclick="switchSubtab('aexpedier')">
+          À expédier <span class="stcount" id="stcount-aexpedier">0</span>
+        </div>
+        <div class="subtab" id="subtab-alivrer" onclick="switchSubtab('alivrer')">
+          À livrer <span class="stcount" id="stcount-alivrer">0</span>
+        </div>
+        <div class="subtab" id="subtab-enroute" onclick="switchSubtab('enroute')">
+          En livraison <span class="stcount" id="stcount-enroute">0</span>
+        </div>
+        <div class="subtab" id="subtab-termines" onclick="switchSubtab('termines')">
+          Terminés <span class="stcount" id="stcount-termines">0</span>
+        </div>
+      </div>
+      <div class="search-wrap">
+        <input type="text" id="searchInput" placeholder="Nom, code, téléphone…" oninput="renderTable()" />
+      </div>
+    </div>
+    <div class="card" style="padding:0; overflow:hidden;">
+      <div class="table-wrap" id="tableWrap"></div>
+    </div>
+  </div>
+
+  <!-- ═══ TAB : CLIENTS ═══ -->
+  <div class="view" id="view-clients">
+    <div class="top-bar">
+      <div class="section-title">Clients</div>
+      <div class="search-wrap">
+        <input type="text" id="clientSearchInput" placeholder="Rechercher un client…" oninput="renderClients()" />
+      </div>
+    </div>
+    <div id="clientGrid"></div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- ═══ MODAL CLIENT DETAIL ═══ -->
+<div class="modal-overlay" id="clientModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="mh-name" id="modalClientName">—</div>
+        <div class="mh-phone" id="modalClientPhone">—</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="timeline" id="modalTimeline"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL RETRAIT ═══ -->
+<div class="retrait-modal" id="retraitModal">
+  <div class="retrait-box">
+    <div class="retrait-header">
+      <span>Confirmer le retrait</span>
+      <button class="modal-close" onclick="closeRetraitModal()">✕</button>
+    </div>
+    <div class="retrait-body">
+      <label>Nom complet de la personne qui retire</label>
+      <input type="text" id="vendeurInput" placeholder="Ex : Sarah Dupont" />
+      <label>Téléphone de la personne qui retire</label>
+      <div class="phone-group" style="margin-bottom:16px">
+        <select class="dial-select" id="vendeurDial" onchange="toggleManualDial('vendeurDial','vendeurDialManual')">
+          <option value="+237">🇨🇲 +237</option>
+          <option value="+33">🇫🇷 +33</option>
+          <option value="+32">🇧🇪 +32</option>
+          <option value="+41">🇨🇭 +41</option>
+          <option value="+225">🇨🇮 +225</option>
+          <option value="+221">🇸🇳 +221</option>
+          <option value="+229">🇧🇯 +229</option>
+          <option value="+242">🇨🇬 +242</option>
+          <option value="+241">🇬🇦 +241</option>
+          <option value="+234">🇳🇬 +234</option>
+          <option value="+233">🇬🇭 +233</option>
+          <option value="+1">🇺🇸 +1</option>
+          <option value="+44">🇬🇧 +44</option>
+          <option value="+other">✏️ Autre…</option>
+        </select>
+        <input type="text" class="dial-manual" id="vendeurDialManual" placeholder="+XXX" maxlength="6" />
+        <input type="tel" class="phone-input" id="vendeurPhone" placeholder="6 12 34 56 78" />
+      </div>
+      <label>Note de retrait (optionnel)</label>
+      <input type="text" id="retraitNote" placeholder="Ex : remis avec reçu" />
+      <label>Signature du client (optionnel)</label>
+      <div class="sig-pad-wrap" style="margin-bottom:8px">
+        <canvas id="signatureCanvas"></canvas>
+      </div>
+      <button type="button" class="btn btn-outline btn-sm" style="margin-bottom:16px" onclick="clearSignature()">Effacer la signature</button>
+      <div class="retrait-confirm">
+        <button class="btn btn-primary" onclick="confirmRetrait()">Confirmer le retrait</button>
+        <button class="btn btn-outline" onclick="closeRetraitModal()">Annuler</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL EXPÉDITION (BORDEREAU) ═══ -->
+<div class="retrait-modal" id="expedieModal">
+  <div class="retrait-box">
+    <div class="retrait-header">
+      <span>Confirmer l'expédition</span>
+      <button class="modal-close" onclick="closeExpedieModal()">✕</button>
+    </div>
+    <div class="retrait-body">
+      <div id="expedieRappel" style="display:none;font-size:13px;color:#08486b;background:#e8f2fa;border-radius:2px;padding:10px 12px;margin-bottom:14px"></div>
+      <label>Photo du bordereau d'expédition</label>
+      <div class="photo-upload-zone" onclick="document.getElementById('bordereauInput').click()" id="bordereauZone">
+        <label class="photo-upload-label">
+          <span class="icon">📄</span>
+          <span>Appuyer pour charger la photo du bordereau</span>
+        </label>
+        <input type="file" id="bordereauInput" accept="image/*" onchange="handleBordereauUpload(this)" />
+      </div>
+      <div class="photo-previews" id="bordereauPreview" style="margin-bottom:16px"></div>
+      <div class="retrait-confirm">
+        <button class="btn btn-primary" onclick="confirmExpedition()">Confirmer l'expédition</button>
+        <button class="btn btn-outline" onclick="closeExpedieModal()">Annuler</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL LIVREUR ═══ -->
+<div class="retrait-modal" id="livreurModal">
+  <div class="retrait-box">
+    <div class="retrait-header">
+      <span>Confier au livreur</span>
+      <button class="modal-close" onclick="closeLivreurModal()">✕</button>
+    </div>
+    <div class="retrait-body">
+      <label>Nom complet du livreur</label>
+      <input type="text" id="livreurInput" placeholder="Ex : Paul Mbarga" />
+      <label>Téléphone du livreur</label>
+      <div class="phone-group" style="margin-bottom:10px">
+        <select class="dial-select" id="livreurDial" onchange="toggleManualDial('livreurDial','livreurDialManual')">
+          <option value="+237">🇨🇲 +237</option>
+          <option value="+33">🇫🇷 +33</option>
+          <option value="+32">🇧🇪 +32</option>
+          <option value="+41">🇨🇭 +41</option>
+          <option value="+225">🇨🇮 +225</option>
+          <option value="+221">🇸🇳 +221</option>
+          <option value="+229">🇧🇯 +229</option>
+          <option value="+242">🇨🇬 +242</option>
+          <option value="+241">🇬🇦 +241</option>
+          <option value="+234">🇳🇬 +234</option>
+          <option value="+233">🇬🇭 +233</option>
+          <option value="+1">🇺🇸 +1</option>
+          <option value="+44">🇬🇧 +44</option>
+          <option value="+other">✏️ Autre…</option>
+        </select>
+        <input type="text" class="dial-manual" id="livreurDialManual" placeholder="+XXX" maxlength="6" />
+        <input type="tel" class="phone-input" id="livreurPhone" placeholder="6 12 34 56 78" />
+      </div>
+      <p style="font-size:11px;color:var(--muted);margin-bottom:16px;line-height:1.5">ℹ️ Ces informations restent internes (traçabilité) et ne sont pas communiquées au client.</p>
+      <div class="retrait-confirm">
+        <button class="btn btn-primary" onclick="confirmLivreur()">Confirmer</button>
+        <button class="btn btn-outline" onclick="closeLivreurModal()">Annuler</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LIGHTBOX ═══ -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightboxImg" src="" alt="Photo article" />
+</div>
+
+<div id="toast"></div>
+
+</div><!-- /#appRoot -->
+
+<script>
+  const STORAGE_KEY = 'audy_colis_v2';
+
+  // ── Configuration synchronisation Google Sheets ──────────────────────────────
+  const SYNC_API_URL = 'https://script.google.com/macros/s/AKfycbzwfzaVQR9wFXofqX_Iuo8Q-2jAicQcwRSENlSNfeK06KWrmb9KIJr0f_xBuFV9YEXBxQ/exec';
+  const SYNC_API_KEY = 'Tchatchoua2026SecureXyz698882600';
+  const SYNC_INTERVAL_MS = 25000;
+  let syncQueue = [];
+  let lastSyncTime = null;
+  let syncInProgress = false;
+
+  // ── Code d'accès ──────────────────────────────
+  function checkAccessGate() {
+    const code = localStorage.getItem('audy_access_code');
+    const lastCheck = localStorage.getItem('audy_access_lastcheck');
+    const today = new Date().toDateString();
+    if (!code) { showAccessGate(); return; }
+    if (lastCheck === today) { startApp(); return; }
+    verifyAccessCode(code, true);
+  }
+
+  function showAccessGate(msg) {
+    document.getElementById('appRoot').style.display = 'none';
+    document.getElementById('accessGate').style.display = 'flex';
+    const msgEl = document.getElementById('accessGateMsg');
+    if (msg) {
+      msgEl.textContent = msg;
+      msgEl.style.color = '#c0392b';
+      msgEl.style.display = 'block';
+    } else {
+      msgEl.style.display = 'none';
+    }
+  }
+
+  function submitAccessCode() {
+    const code = document.getElementById('accessCodeInput').value.trim().toUpperCase();
+    if (!code) { return; }
+    const msgEl = document.getElementById('accessGateMsg');
+    msgEl.textContent = 'Vérification…';
+    msgEl.style.color = 'var(--muted)';
+    msgEl.style.display = 'block';
+    verifyAccessCode(code, false);
+  }
+
+  function verifyAccessCode(code, silent) {
+    const url = `${SYNC_API_URL}?key=${encodeURIComponent(SYNC_API_KEY)}&action=checkCode&code=${encodeURIComponent(code)}`;
+    fetch(url).then(r => r.json()).then(data => {
+      if (data.ok && data.valid) {
+        localStorage.setItem('audy_access_code', code);
+        localStorage.setItem('audy_access_name', data.nom || '');
+        localStorage.setItem('audy_access_lastcheck', new Date().toDateString());
+        startApp();
+      } else if (data.ok && !data.valid) {
+        localStorage.removeItem('audy_access_code');
+        showAccessGate('Code invalide ou désactivé. Contactez le gestionnaire.');
+      } else {
+        if (silent) startApp(); // erreur côté serveur en vérif silencieuse -> on continue hors-ligne
+        else showAccessGate('Erreur de vérification. Réessayez.');
+      }
+    }).catch(() => {
+      if (silent) {
+        // Pas de réseau lors de la vérification quotidienne -> on continue, on réessaiera plus tard
+        startApp();
+      } else {
+        showAccessGate('Connexion impossible. Une connexion internet est nécessaire pour la première utilisation.');
+      }
+    });
+  }
+
+  function startApp() {
+    document.getElementById('accessGate').style.display = 'none';
+    document.getElementById('appRoot').style.display = 'block';
+    updateCounter();
+    checkAExpedier();
+    populateVillesDatalist();
+    pullFromSheet();
+    trySyncNow();
+    setInterval(() => { pullFromSheet(); trySyncNow(); }, SYNC_INTERVAL_MS);
+  }
+
+  // ── Synchronisation Google Sheets ──────────────────────────────
+  function updateSyncIndicator() {
+    const el = document.getElementById('syncIndicator');
+    if (!el) return;
+    el.classList.remove('sync-pending','sync-error');
+    if (syncQueue.length > 0) {
+      el.textContent = '⏳ ' + syncQueue.length + ' en attente';
+      el.classList.add('sync-pending');
+    } else if (lastSyncTime) {
+      el.textContent = '✓ Synchronisé';
+    } else {
+      el.textContent = '🔄 Synchronisation…';
+    }
+  }
+
+  function queueSync(code) {
+    if (!syncQueue.includes(code)) syncQueue.push(code);
+    updateSyncIndicator();
+    trySyncNow();
+  }
+
+  async function trySyncNow() {
+    if (syncInProgress || !navigator.onLine || syncQueue.length === 0) { updateSyncIndicator(); return; }
+    syncInProgress = true;
+    const data = load();
+    const codes = [...new Set(syncQueue)];
+    for (const code of codes) {
+      const item = data.find(c => c.code === code);
+      if (!item) { syncQueue = syncQueue.filter(c => c !== code); continue; }
+      try {
+        await pushItemToSheet(item);
+        syncQueue = syncQueue.filter(c => c !== code);
+      } catch (e) { /* on garde dans la file, on retentera */ }
+    }
+    lastSyncTime = new Date();
+    syncInProgress = false;
+    updateSyncIndicator();
+  }
+
+  function pushItemToSheet(item) {
+    const payload = {
+      key: SYNC_API_KEY,
+      code: item.code,
+      civilite: item.civilite || '',
+      name: item.name || '',
+      phone: item.phone || '',
+      ref: item.ref || '',
+      desc: item.desc || '',
+      agence: item.agence || '',
+      ville: item.ville || '',
+      note: item.note || '',
+      status: item.status || '',
+      date: item.date || '',
+      retrait_vendeur: item.retrait ? item.retrait.vendeur : '',
+      retrait_vendeurPhone: item.retrait ? item.retrait.vendeurPhone : '',
+      retrait_date: item.retrait ? item.retrait.date : '',
+      retrait_signature_url: '',
+      livraison_livreur: item.livraison ? item.livraison.livreur : '',
+      livraison_livreurPhone: item.livraison ? item.livraison.livreurPhone : '',
+      livraison_dateEnvoi: item.livraison ? item.livraison.dateEnvoi : '',
+      livraison_dateLivree: item.livraison ? item.livraison.dateLivree : '',
+      bordereau_url: '',
+      photos_urls: '',
+      updatedAt: item.updatedAt
+    };
+    return fetch(SYNC_API_URL, { method: 'POST', body: JSON.stringify(payload) })
+      .then(r => r.json())
+      .then(json => { if (!json.ok) throw new Error('sync failed'); });
+  }
+
+  function pullFromSheet() {
+    if (!navigator.onLine) return;
+    fetch(`${SYNC_API_URL}?key=${encodeURIComponent(SYNC_API_KEY)}&action=colis`)
+      .then(r => r.json())
+      .then(json => {
+        if (!json.ok) return;
+        mergeRemoteData(json.data);
+        lastSyncTime = new Date();
+        updateSyncIndicator();
+      })
+      .catch(() => { /* hors-ligne, on réessaiera */ });
+  }
+
+  function remoteRowToItem(r) {
+    return {
+      code: r.code,
+      civilite: r.civilite || 'M.',
+      name: r.name || '',
+      phone: r.phone || '',
+      ref: r.ref || '',
+      desc: r.desc || '',
+      agence: r.agence || '',
+      ville: r.ville || '',
+      note: r.note || '',
+      status: r.status || 'prepare',
+      date: r.date || new Date().toISOString(),
+      photos: [],
+      bordereau: null,
+      retrait: r.retrait_vendeur ? { vendeur: r.retrait_vendeur, vendeurPhone: r.retrait_vendeurPhone, date: r.retrait_date, note: '', signature: null } : null,
+      livraison: (r.livraison_livreur || r.livraison_dateLivree) ? { livreur: r.livraison_livreur, livreurPhone: r.livraison_livreurPhone, dateEnvoi: r.livraison_dateEnvoi, dateLivree: r.livraison_dateLivree } : null,
+      updatedAt: r.updatedAt || new Date().toISOString()
+    };
+  }
+
+  function mergeRemoteData(remoteRows) {
+    const local = load();
+    const localByCode = {};
+    local.forEach(c => localByCode[c.code] = c);
+    let changed = false;
+    remoteRows.forEach(r => {
+      if (!r.code) return;
+      const existing = localByCode[r.code];
+      const remoteTime = r.updatedAt ? new Date(r.updatedAt).getTime() : 0;
+      const localTime  = existing && existing.updatedAt ? new Date(existing.updatedAt).getTime() : 0;
+      if (!existing) {
+        local.push(remoteRowToItem(r));
+        changed = true;
+      } else if (remoteTime > localTime) {
+        const merged = remoteRowToItem(r);
+        merged.photos    = existing.photos || [];
+        merged.bordereau = existing.bordereau || null;
+        if (merged.retrait && existing.retrait) merged.retrait.signature = existing.retrait.signature || null;
+        Object.assign(existing, merged);
+        changed = true;
+      }
+    });
+    if (changed) {
+      save(local);
+      renderTable();
+      renderClients();
+      updateCounter();
+      checkAExpedier();
+    }
+  }
+  let currentCode = null;
+  let pendingRetraitCode = null;
+  let pendingExpedieCode = null;
+  let pendingBordereau = null;
+
+  // ── Storage ──────────────────────────────
+  function load() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; } }
+  function save(data) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+
+  // ── Utils ──────────────────────────────
+  function rand5() {
+    const c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let s = '';
+    for (let i = 0; i < 5; i++) s += c[Math.floor(Math.random() * c.length)];
+    return s;
+  }
+  function buildCode(name) {
+    const clean = name.trim().toUpperCase().replace(/\s+/g,'').replace(/[^A-Z0-9]/g,'');
+    return 'AUDY-' + clean + '-' + rand5();
+  }
+  function isUnique(code) { return !load().some(c => c.code === code); }
+  function formatDate(iso) {
+    return new Date(iso).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' });
+  }
+  function formatDateTime(iso) {
+    const d = new Date(iso);
+    return d.toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' }) + ' à ' +
+           d.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+  }
+  function greeting() {
+    return new Date().getHours() < 18 ? 'Bonjour' : 'Bonsoir';
+  }
+  function formatHeure(iso) {
+    return new Date(iso).toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+  }
+  function buildMessageEnregistre(civilite, name, dateIso, code) {
+    return `${greeting()} ${civilite} ${name}, nous vous informons que votre colis a bien été enregistré chez AUDY STORE le ${formatDate(dateIso)} à ${formatHeure(dateIso)}. Code de suivi : ${code}. Nous restons à votre disposition.`;
+  }
+  function buildMessageExpedie(civilite, name, code) {
+    return `${greeting()} ${civilite} ${name}, nous avons le plaisir de vous informer que votre colis (code ${code}) a été expédié. Vous trouverez le bordereau ci-joint. Cordialement, AUDY STORE.`;
+  }
+  function buildMessageRetrait(civilite, name, code, retireur, retireurPhone, dateIso) {
+    return `${greeting()} ${civilite} ${name}, votre colis ${code} a bien été retiré par ${retireur} (${retireurPhone}) le ${formatDate(dateIso)} à ${formatHeure(dateIso)}. Cordialement, AUDY STORE.`;
+  }
+  function buildMessageLivre(civilite, name, code, dateIso) {
+    return `${greeting()} ${civilite} ${name}, votre colis ${code} a bien été livré à votre adresse le ${formatDate(dateIso)}. Cordialement, AUDY STORE.`;
+  }
+  // ── Photos ──────────────────────────────
+  let pendingPhotos = []; // base64 strings
+
+  function compressImage(file) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const MAX = 900;
+          let w = img.width, h = img.height;
+          if (w > MAX || h > MAX) {
+            if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+            else       { w = Math.round(w * MAX / h); h = MAX; }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', 0.72));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function handlePhotoUpload(input) {
+    const files = Array.from(input.files);
+    const remaining = 3 - pendingPhotos.length;
+    if (remaining <= 0) { toast('⚠ Maximum 3 photos atteint'); input.value=''; return; }
+    const toProcess = files.slice(0, remaining);
+    for (const f of toProcess) {
+      const b64 = await compressImage(f);
+      pendingPhotos.push(b64);
+    }
+    if (files.length > remaining) toast(`⚠ Seules ${remaining} photo(s) ajoutée(s) — max 3`);
+    renderPhotoPreviews();
+    input.value = '';
+  }
+
+  function renderPhotoPreviews() {
+    const wrap = document.getElementById('photoPreviews');
+    wrap.innerHTML = pendingPhotos.map((b64, i) => `
+      <div class="photo-thumb-wrap">
+        <img class="photo-thumb" src="${b64}" onclick="openLightboxIdx('pending',${i})" />
+        <button class="photo-remove" onclick="removePhoto(${i})">✕</button>
+      </div>`).join('');
+    const zone = document.querySelector('.photo-upload-zone');
+    if (zone) zone.style.display = pendingPhotos.length >= 3 ? 'none' : 'block';
+  }
+
+  function removePhoto(i) {
+    pendingPhotos.splice(i, 1);
+    renderPhotoPreviews();
+  }
+
+  // Cache photos pour lightbox (évite les apostrophes dans onclick)
+  let lightboxCache = [];
+
+  function openLightboxIdx(source, idx) {
+    let src;
+    if (source === 'pending') src = pendingPhotos[idx];
+    else if (source === 'bordereauPreview') src = pendingBordereau;
+    else src = lightboxCache[idx];
+    if (!src) return;
+    document.getElementById('lightboxImg').src = src;
+    document.getElementById('lightbox').classList.add('open');
+  }
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+  }
+
+
+  function toast(msg, dur = 2200) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), dur);
+  }
+  let currentSubtab = 'encours';
+
+  const FINAL_STATUSES = ['retire','expedie','livre'];
+
+  function updateCounter() {
+    const data      = load();
+    const encours   = data.filter(c => !FINAL_STATUSES.includes(c.status)).length;
+    const prepare   = data.filter(c => c.status === 'prepare').length;
+    const aexp      = data.filter(c => c.status === 'aexpedier').length;
+    const alivrer   = data.filter(c => c.status === 'alivrer').length;
+    const enroute   = data.filter(c => c.status === 'enroute').length;
+    const termines  = data.filter(c => FINAL_STATUSES.includes(c.status)).length;
+    document.getElementById('badgeEncours').textContent = '📦 ' + encours + ' en cours';
+    document.getElementById('badgeRetire').textContent  = '✅ ' + termines + ' terminé' + (termines > 1 ? 's' : '');
+    document.getElementById('badgeAExpedier').textContent = '🟠 ' + aexp + ' à expédier';
+    const counts = { encours, prepare, aexpedier: aexp, alivrer, enroute, termines };
+    Object.keys(counts).forEach(k => {
+      const el = document.getElementById('stcount-'+k);
+      if (el) el.textContent = counts[k];
+    });
+  }
+
+  function checkAExpedier() {
+    const n = load().filter(c => c.status === 'aexpedier').length;
+    const banner = document.getElementById('alertBanner');
+    if (n > 0) {
+      document.getElementById('alertBannerText').textContent =
+        '⚠ ' + n + ' colis à expédier (en attente du transporteur)';
+      banner.style.display = 'flex';
+    } else {
+      banner.style.display = 'none';
+    }
+  }
+  function dismissBanner() { document.getElementById('alertBanner').style.display = 'none'; }
+  function goToAExpedier() {
+    dismissBanner();
+    switchTab('colis');
+    switchSubtab('aexpedier');
+  }
+
+  function switchSubtab(name) {
+    currentSubtab = name;
+    ['encours','prepare','aexpedier','alivrer','enroute','termines'].forEach(n => {
+      document.getElementById('subtab-'+n).classList.toggle('active', n === name);
+    });
+    renderTable();
+  }
+  function clientKey(name, phone) {
+    return (name||'').trim().toLowerCase() + '|' + (phone||'').trim();
+  }
+
+  // ── Tabs ──────────────────────────────
+  function switchTab(name) {
+    document.querySelectorAll('.tab').forEach((t,i) => {
+      const names = ['nouveau','colis','clients'];
+      t.classList.toggle('active', names[i] === name);
+    });
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + name).classList.add('active');
+    if (name === 'colis') renderTable();
+    if (name === 'clients') renderClients();
+  }
+
+  // ── Client autocomplete ──────────────────────────────
+  function suggestClient() {
+    const val = document.getElementById('clientName').value.trim().toLowerCase();
+    const dl = document.getElementById('clientSuggestions');
+    if (!val) { dl.innerHTML = ''; return; }
+    const seen = new Set();
+    const opts = load()
+      .filter(c => c.name.toLowerCase().includes(val))
+      .filter(c => { if (seen.has(c.name)) return false; seen.add(c.name); return true; })
+      .slice(0, 6)
+      .map(c => `<option value="${c.name}" data-phone="${c.phone||''}">`);
+    dl.innerHTML = opts.join('');
+    // auto-fill phone when name selected
+    document.getElementById('clientName').addEventListener('change', autoFillPhone, { once: false });
+  }
+  function autoFillPhone() {
+    const name = document.getElementById('clientName').value.trim();
+    const match = load().find(c => c.name.toLowerCase() === name.toLowerCase());
+    if (match && match.phone) {
+      const ph = document.getElementById('clientPhone');
+      if (!ph.value) ph.value = match.phone;
+    }
+    if (match && match.civilite) {
+      document.getElementById('clientCivilite').value = match.civilite;
+    }
+  }
+
+  function toggleDescAutre() {
+    const sel = document.getElementById('descSelect').value;
+    document.getElementById('descAutre').style.display = sel === 'autre' ? 'block' : 'none';
+  }
+  function getDescValue() {
+    const sel = document.getElementById('descSelect').value;
+    if (!sel) return '';
+    if (sel === 'autre') return document.getElementById('descAutre').value.trim();
+    return sel;
+  }
+
+  // ── Agence de voyage / Ville (statut "À expédier") ──────────────────────────────
+  const CAMEROON_CITIES = [
+    'Douala','Yaoundé','Garoua','Bafoussam','Bamenda','Maroua','Ngaoundéré','Bertoua','Ebolowa','Kribi',
+    'Buea','Limbe','Edéa','Dschang','Foumban','Kumba','Nkongsamba','Mbalmayo','Bafia','Bafang',
+    'Mbouda','Foumbot','Banganté','Mbanga','Loum','Tiko','Muyuka','Kumbo','Wum','Nkambé',
+    'Fundong','Mamfé','Ndop','Tibati','Meiganga','Bélabo','Yokadouma','Batouri','Abong-Mbang','Doumé',
+    'Akonolinga','Sangmélima','Ambam','Kribi','Lolodorf','Mvengue','Eséka','Dibombari','Bonabéri','Penja',
+    'Manjo','Melong','Bangangté','Galim','Tonga','Foumbot','Magba','Ngaoubela','Guider','Mokolo',
+    'Kaélé','Mora','Yagoua','Kousseri','Touboro','Poli','Tcholliré','Rey Bouba','Banyo','Tignère',
+    'Nkongsamba','Santchou','Babadjou','Bandjoun','Bangou','Baham','Bafou','Penka-Michel','Santa','Tubah',
+    'Bali','Batibo','Widikum','Akwaya','Eyumojock','Idenau','Bamusso','Mundemba','Nguti','Konye',
+    'Yabassi','Nkondjock','Massock','Pouma','Ngambé','Dizangué','Sa\'a','Obala','Bafia','Ntui',
+    'Yoko','Bétaré-Oya','Garoua-Boulaï','Ngoura','Lomié','Ngoyla','Moloundou','Salapoumbé','Djoum','Mengong',
+    'Campo','Akom II','Niété','Bipindi'
+  ];
+  function toggleAgenceFields() {
+    const isExp = document.getElementById('statusSelect').value === 'aexpedier';
+    document.getElementById('agenceFieldsRow').style.display = isExp ? 'flex' : 'none';
+  }
+  function toggleAgenceAutre() {
+    const sel = document.getElementById('agenceSelect').value;
+    document.getElementById('agenceAutre').style.display = sel === 'autre' ? 'block' : 'none';
+  }
+  function getAgenceValue() {
+    const sel = document.getElementById('agenceSelect').value;
+    if (!sel) return '';
+    if (sel === 'autre') return document.getElementById('agenceAutre').value.trim();
+    return sel;
+  }
+  function populateVillesDatalist() {
+    const dl = document.getElementById('villesCameroun');
+    if (!dl) return;
+    dl.innerHTML = CAMEROON_CITIES.slice().sort((a,b) => a.localeCompare(b,'fr'))
+      .map(v => `<option value="${v}"></option>`).join('');
+  }
+
+  // ── Generate ──────────────────────────────
+  function generateCode() {
+    const name = document.getElementById('clientName').value.trim();
+    if (!name) { toast('⚠ Saisir le nom du client'); return; }
+    let code, tries = 0;
+    do { code = buildCode(name); tries++; } while (!isUnique(code) && tries < 20);
+    currentCode = code;
+    document.getElementById('codeDisplay').textContent = code;
+    document.getElementById('codePreviewBox').style.display = 'flex';
+    document.getElementById('saveBtn').style.display = 'inline-block';
+    toast('Code généré — ' + code);
+  }
+
+  function saveColis() {
+    if (!currentCode) return;
+    const civilite = document.getElementById('clientCivilite').value;
+    const name   = document.getElementById('clientName').value.trim();
+    const phone  = getFullPhone('clientDial','clientDialManual','clientPhone');
+    const ref    = document.getElementById('orderRef').value.trim();
+    const desc   = getDescValue();
+    const note   = document.getElementById('noteField').value.trim();
+    const status = document.getElementById('statusSelect').value;
+    const agence = status === 'aexpedier' ? getAgenceValue() : '';
+    const ville  = status === 'aexpedier' ? document.getElementById('villeInput').value.trim() : '';
+    if (!name) { toast('⚠ Nom requis'); return; }
+    const data = load();
+    data.unshift({ code: currentCode, civilite, name, phone, ref, desc, note, agence, ville, photos: [...pendingPhotos], status, date: new Date().toISOString(), retrait: null, bordereau: null, updatedAt: new Date().toISOString() });
+    save(data);
+    queueSync(currentCode);
+    ['clientName','clientPhone','orderRef','noteField'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('clientCivilite').value = 'M.';
+    document.getElementById('descSelect').value = '';
+    document.getElementById('descAutre').value = '';
+    document.getElementById('descAutre').style.display = 'none';
+    document.getElementById('agenceSelect').value = '';
+    document.getElementById('agenceAutre').value = '';
+    document.getElementById('agenceAutre').style.display = 'none';
+    document.getElementById('villeInput').value = '';
+    document.getElementById('agenceFieldsRow').style.display = 'none';
+    document.getElementById('clientDial').value = '+237';
+    document.getElementById('clientDialManual').classList.remove('visible');
+    document.getElementById('clientDialManual').value = '';
+    document.getElementById('statusSelect').value = 'prepare';
+    document.getElementById('codePreviewBox').style.display = 'none';
+    document.getElementById('saveBtn').style.display = 'none';
+    pendingPhotos = [];
+    renderPhotoPreviews();
+    currentCode = null;
+    updateCounter();
+    checkAExpedier();
+    toast('✓ Colis enregistré');
+  }
+
+  function copyCode() {
+    if (!currentCode) return;
+    navigator.clipboard.writeText(currentCode).then(() => toast('Code copié'));
+  }
+  function toggleManualDial(selectId, manualId) {
+    const sel = document.getElementById(selectId);
+    const man = document.getElementById(manualId);
+    if (sel.value === '+other') {
+      man.classList.add('visible');
+      man.focus();
+    } else {
+      man.classList.remove('visible');
+      man.value = '';
+    }
+  }
+
+  function getFullPhone(dialId, manualId, phoneId) {
+    const sel   = document.getElementById(dialId);
+    const man   = document.getElementById(manualId);
+    const phone = document.getElementById(phoneId).value.trim();
+    if (!phone) return '';
+    const dial  = sel.value === '+other' ? man.value.trim() : sel.value;
+    // Supprimer le 0 initial si présent
+    const digits = phone.replace(/^0/, '');
+    return dial + digits;
+  }
+
+  function openWhatsApp(fullPhone, msg) {
+    if (!fullPhone) return;
+    // Nettoyer : garder + et chiffres uniquement
+    const num = fullPhone.replace(/[^\d+]/g,'');
+    window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, '_blank');
+  }
+
+  function copyForSMS() {
+    if (!currentCode) return;
+    const civilite = document.getElementById('clientCivilite').value;
+    const name  = document.getElementById('clientName').value.trim() || '—';
+    const phone = getFullPhone('clientDial','clientDialManual','clientPhone');
+    const msg   = buildMessageEnregistre(civilite, name, new Date().toISOString(), currentCode);
+    navigator.clipboard.writeText(msg).then(() => toast('Message copié'));
+    openWhatsApp(phone, msg);
+  }
+
+  function sendRetraitWhatsApp(item, retireurNom, retireurPhone) {
+    const msg = buildMessageRetrait(item.civilite||'M.', item.name, item.code, retireurNom, retireurPhone, item.retrait.date);
+    navigator.clipboard.writeText(msg);
+    openWhatsApp(item.phone, msg);
+  }
+
+  function sendExpedieWhatsApp(item) {
+    const msg = buildMessageExpedie(item.civilite||'M.', item.name, item.code);
+    navigator.clipboard.writeText(msg);
+    openWhatsApp(item.phone, msg);
+  }
+
+  function sendLivraisonWhatsApp(item) {
+    const msg = buildMessageLivre(item.civilite||'M.', item.name, item.code, item.livraison.dateLivree);
+    navigator.clipboard.writeText(msg);
+    openWhatsApp(item.phone, msg);
+  }
+
+  // ── Table ──────────────────────────────
+  const STATUS_LABELS = { prepare:'Préparé', aexpedier:'À expédier', alivrer:'À livrer', enroute:'En livraison', expedie:'Expédié', livre:'Livré', retire:'Retiré' };
+  function statusBadge(s) {
+    return `<span class="status-badge status-${s}">${STATUS_LABELS[s]||s}</span>`;
+  }
+  function statusActionButton(c) {
+    switch (c.status) {
+      case 'prepare':   return `<button class="btn-retrait" onclick="openRetraitModal('${esc(c.code)}')">Retrait</button>`;
+      case 'aexpedier': return `<button class="btn-retrait" style="background:#2a6f97" onclick="openExpedieModal('${esc(c.code)}')">📦 Expédier</button>`;
+      case 'alivrer':   return `<button class="btn-retrait" style="background:#5a3d99" onclick="openLivreurModal('${esc(c.code)}')">🚚 Confier au livreur</button>`;
+      case 'enroute':   return `<button class="btn-retrait" style="background:#1a7a5e" onclick="confirmLivraisonTerminee('${esc(c.code)}')">✅ Livraison terminée</button>`;
+      default: return '';
+    }
+  }
+
+  const SUBTAB_FILTERS = {
+    encours:   c => !FINAL_STATUSES.includes(c.status),
+    prepare:   c => c.status === 'prepare',
+    aexpedier: c => c.status === 'aexpedier',
+    alivrer:   c => c.status === 'alivrer',
+    enroute:   c => c.status === 'enroute',
+    termines:  c => FINAL_STATUSES.includes(c.status)
+  };
+  const SUBTAB_EMPTY = {
+    encours:   { icon:'📦', msg:'Aucun colis en cours' },
+    prepare:   { icon:'📦', msg:'Aucun colis préparé en attente de retrait' },
+    aexpedier: { icon:'🟠', msg:'Aucun colis à expédier' },
+    alivrer:   { icon:'🚚', msg:'Aucun colis à livrer' },
+    enroute:   { icon:'🚚', msg:'Aucun colis en livraison' },
+    termines:  { icon:'✅', msg:'Aucun colis terminé' }
+  };
+
+  function renderTable() {
+    const q = (document.getElementById('searchInput').value||'').toLowerCase();
+    let data = load();
+    // Filtre sous-onglet
+    data = data.filter(SUBTAB_FILTERS[currentSubtab] || SUBTAB_FILTERS.encours);
+    // Filtre recherche
+    if (q) data = data.filter(c =>
+      c.code.toLowerCase().includes(q) ||
+      c.name.toLowerCase().includes(q) ||
+      (c.phone&&c.phone.includes(q)) ||
+      (c.ref&&c.ref.toLowerCase().includes(q))
+    );
+    const wrap = document.getElementById('tableWrap');
+    if (!data.length) {
+      const empty = SUBTAB_EMPTY[currentSubtab] || SUBTAB_EMPTY.encours;
+      const emptyMsg  = q ? `Aucun résultat pour "${q}"` : empty.msg;
+      const emptyIcon = q ? '🔎' : empty.icon;
+      wrap.innerHTML = `<div class="empty-state"><div class="icon">${emptyIcon}</div>${emptyMsg}</div>`;
+      return;
+    }
+    // Construire le cache lightbox pour cette vue
+    lightboxCache = [];
+    data.forEach(c => { if (c.photos) c.photos.forEach(p => lightboxCache.push(p)); if (c.bordereau) lightboxCache.push(c.bordereau); });
+
+    wrap.innerHTML = `
+      <table>
+        <thead><tr>
+          <th>Photos</th><th>Code</th><th>Client</th><th>Article</th><th>Statut</th><th>Date</th><th>Actions</th>
+        </tr></thead>
+        <tbody>${data.map(c => `
+        <tr>
+          <td>
+            <div class="table-thumbs">
+            ${c.photos && c.photos.length
+              ? c.photos.map(p => {
+                  const idx = lightboxCache.indexOf(p);
+                  return `<img class="table-thumb" src="${p}" onclick="openLightboxIdx('cache',${idx})" />`;
+                }).join('')
+              : ''}
+            ${c.bordereau
+              ? `<img class="table-thumb" style="border-color:#2a6f97" src="${c.bordereau}" onclick="openLightboxIdx('cache',${lightboxCache.indexOf(c.bordereau)})" title="Bordereau d'expédition" />`
+              : ''}
+            ${(!c.photos || !c.photos.length) && !c.bordereau ? `<span style="color:var(--border);font-size:18px">—</span>` : ''}
+            </div>
+          </td>
+          <td class="td-code">${c.code}</td>
+          <td class="td-name" style="cursor:pointer;text-decoration:underline dotted;color:var(--gold)" onclick="openClientModal('${esc(c.name)}','${esc(c.phone||'')}')">${c.name}</td>
+          <td style="font-size:13px">
+            ${c.ref ? `<div style="font-weight:500">${c.ref}</div>` : ''}
+            ${c.desc ? `<div style="font-size:11px;color:var(--muted);margin-top:3px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.desc}</div>` : ''}
+            ${!c.ref && !c.desc ? '—' : ''}
+          </td>
+          <td>
+            ${statusBadge(c.status)}
+            ${c.agence ? `<div class="td-retrait-info" style="margin-top:4px">🚌 ${c.agence}${c.ville?' → '+c.ville:''}</div>` : ''}
+            ${c.status === 'retire' ? `<div class="td-retrait-info" style="margin-top:4px">🛍 ${c.retrait?c.retrait.vendeur:'—'} · 📞 ${c.retrait&&c.retrait.vendeurPhone?c.retrait.vendeurPhone:'—'} · ${c.retrait?formatDate(c.retrait.date):'—'}${c.retrait&&c.retrait.signature?' · 🖊':''}</div>` : ''}
+            ${c.status === 'enroute' && c.livraison ? `<div class="td-retrait-info" style="margin-top:4px">🚚 ${c.livraison.livreur} · 📞 ${c.livraison.livreurPhone}</div>` : ''}
+          </td>
+          <td class="td-date">${formatDate(c.date)}</td>
+          <td class="td-actions">
+            <button class="btn btn-outline btn-sm" onclick="copyRowCode('${esc(c.code)}')">Copier</button>
+            <button class="btn btn-outline btn-sm" style="color:#25D366;border-color:rgba(37,211,102,0.4)" onclick="copyRowSMS('${esc(c.code)}')">WhatsApp</button>
+            ${statusActionButton(c)}
+            <button class="btn btn-danger" onclick="deleteColis('${esc(c.code)}')">✕</button>
+          </td>
+        </tr>`).join('')}
+        </tbody>
+      </table>`;
+  }
+
+  function esc(s) { return (s||'').replace(/'/g,"\\'"); }
+
+  function deleteColis(code) {
+    if (!confirm('Supprimer ce colis ?')) return;
+    save(load().filter(c => c.code !== code));
+    renderTable();
+    renderClients();
+    updateCounter();
+    checkAExpedier();
+    toast('Colis supprimé');
+  }
+
+  function copyRowCode(code) { navigator.clipboard.writeText(code).then(() => toast('Code copié — '+code)); }
+  function copyRowSMS(code) {
+    const item = load().find(c => c.code === code);
+    if (!item) return;
+    const msg = buildMessageEnregistre(item.civilite||'M.', item.name, item.date, item.code);
+    navigator.clipboard.writeText(msg).then(() => toast('Message copié pour '+item.name));
+    openWhatsApp(item.phone, msg);
+  }
+
+  // ── Retrait ──────────────────────────────
+  function openRetraitModal(code) {
+    pendingRetraitCode = code;
+    document.getElementById('vendeurInput').value = '';
+    document.getElementById('vendeurPhone').value = '';
+    document.getElementById('vendeurDial').value = '+237';
+    document.getElementById('vendeurDialManual').classList.remove('visible');
+    document.getElementById('vendeurDialManual').value = '';
+    document.getElementById('retraitNote').value = '';
+    document.getElementById('retraitModal').classList.add('open');
+    initSignaturePad();
+  }
+  function closeRetraitModal() {
+    document.getElementById('retraitModal').classList.remove('open');
+    pendingRetraitCode = null;
+  }
+  function confirmRetrait() {
+    const vendeur      = document.getElementById('vendeurInput').value.trim();
+    const vendeurPhone = getFullPhone('vendeurDial','vendeurDialManual','vendeurPhone');
+    const note         = document.getElementById('retraitNote').value.trim();
+    const signature    = getSignatureData();
+    if (!vendeur)      { toast('⚠ Nom du retireur requis'); return; }
+    if (!vendeurPhone) { toast('⚠ Téléphone du retireur requis'); return; }
+    const data = load();
+    const item = data.find(c => c.code === pendingRetraitCode);
+    if (item) {
+      item.status  = 'retire';
+      item.retrait = { vendeur, vendeurPhone, note, date: new Date().toISOString(), signature };
+      item.updatedAt = new Date().toISOString();
+      save(data);
+      queueSync(item.code);
+      renderTable();
+      renderClients();
+      updateCounter();
+      checkAExpedier();
+      toast(`✓ Retrait confirmé — remis par ${vendeur}`);
+      // Envoyer WhatsApp au client
+      if (item.phone) sendRetraitWhatsApp(item, vendeur, vendeurPhone);
+    }
+    closeRetraitModal();
+    const mn = document.getElementById('modalClientName').textContent;
+    const mp = document.getElementById('modalClientPhone').textContent;
+    if (document.getElementById('clientModal').classList.contains('open') && mn) {
+      openClientModal(mn, mp);
+    }
+  }
+
+  // ── Signature client (retrait boutique) ──────────────────────────────
+  let sigCtx = null, sigDrawing = false, sigHasContent = false;
+  function initSignaturePad() {
+    const canvas = document.getElementById('signatureCanvas');
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+    sigCtx = canvas.getContext('2d');
+    sigCtx.strokeStyle = '#1a1a1a';
+    sigCtx.lineWidth = 2;
+    sigCtx.lineJoin = 'round';
+    sigCtx.lineCap = 'round';
+    sigHasContent = false;
+    function pos(e) {
+      const r = canvas.getBoundingClientRect();
+      const cx = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+      const cy = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
+      return { x: cx, y: cy };
+    }
+    function start(e) { sigDrawing = true; const p = pos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x, p.y); e.preventDefault(); }
+    function move(e)  { if (!sigDrawing) return; const p = pos(e); sigCtx.lineTo(p.x, p.y); sigCtx.stroke(); sigHasContent = true; e.preventDefault(); }
+    function end()     { sigDrawing = false; }
+    canvas.onmousedown  = start; canvas.onmousemove = move; canvas.onmouseup = end; canvas.onmouseleave = end;
+    canvas.ontouchstart = start; canvas.ontouchmove = move; canvas.ontouchend = end;
+  }
+  function clearSignature() {
+    const canvas = document.getElementById('signatureCanvas');
+    if (!canvas || !sigCtx) return;
+    sigCtx.clearRect(0, 0, canvas.width, canvas.height);
+    sigHasContent = false;
+  }
+  function getSignatureData() {
+    if (!sigHasContent) return null;
+    const canvas = document.getElementById('signatureCanvas');
+    return canvas.toDataURL('image/png');
+  }
+
+  // ── Expédition (bordereau) ──────────────────────────────
+  function openExpedieModal(code) {
+    pendingExpedieCode = code;
+    pendingBordereau = null;
+    document.getElementById('bordereauPreview').innerHTML = '';
+    document.getElementById('bordereauZone').style.display = 'block';
+    const item = load().find(c => c.code === code);
+    const rappel = document.getElementById('expedieRappel');
+    if (item && item.agence) {
+      rappel.textContent = `🚌 ${item.agence}${item.ville ? ' → '+item.ville : ''}`;
+      rappel.style.display = 'block';
+    } else {
+      rappel.style.display = 'none';
+    }
+    document.getElementById('expedieModal').classList.add('open');
+  }
+  function closeExpedieModal() {
+    document.getElementById('expedieModal').classList.remove('open');
+    pendingExpedieCode = null;
+    pendingBordereau = null;
+  }
+  async function handleBordereauUpload(input) {
+    const file = input.files[0];
+    if (!file) return;
+    pendingBordereau = await compressImage(file);
+    document.getElementById('bordereauPreview').innerHTML = `
+      <div class="photo-thumb-wrap">
+        <img class="photo-thumb" src="${pendingBordereau}" onclick="openLightboxIdx('bordereauPreview',0)" />
+        <button class="photo-remove" onclick="removeBordereau()">✕</button>
+      </div>`;
+    document.getElementById('bordereauZone').style.display = 'none';
+    input.value = '';
+  }
+  function removeBordereau() {
+    pendingBordereau = null;
+    document.getElementById('bordereauPreview').innerHTML = '';
+    document.getElementById('bordereauZone').style.display = 'block';
+  }
+  function confirmExpedition() {
+    if (!pendingBordereau) { toast('⚠ Charger la photo du bordereau'); return; }
+    const data = load();
+    const item = data.find(c => c.code === pendingExpedieCode);
+    if (item) {
+      item.status = 'expedie';
+      item.bordereau = pendingBordereau;
+      item.updatedAt = new Date().toISOString();
+      save(data);
+      queueSync(item.code);
+      renderTable();
+      renderClients();
+      updateCounter();
+      checkAExpedier();
+      toast('✓ Colis marqué comme expédié');
+      if (item.phone) sendExpedieWhatsApp(item);
+    }
+    closeExpedieModal();
+  }
+
+  // ── Livraison (confier au livreur / livraison terminée) ──────────────────────────────
+  let pendingLivreurCode = null;
+  function openLivreurModal(code) {
+    pendingLivreurCode = code;
+    document.getElementById('livreurInput').value = '';
+    document.getElementById('livreurPhone').value = '';
+    document.getElementById('livreurDial').value = '+237';
+    document.getElementById('livreurDialManual').classList.remove('visible');
+    document.getElementById('livreurDialManual').value = '';
+    document.getElementById('livreurModal').classList.add('open');
+  }
+  function closeLivreurModal() {
+    document.getElementById('livreurModal').classList.remove('open');
+    pendingLivreurCode = null;
+  }
+  function confirmLivreur() {
+    const livreur      = document.getElementById('livreurInput').value.trim();
+    const livreurPhone = getFullPhone('livreurDial','livreurDialManual','livreurPhone');
+    if (!livreur)      { toast('⚠ Nom du livreur requis'); return; }
+    if (!livreurPhone) { toast('⚠ Téléphone du livreur requis'); return; }
+    const data = load();
+    const item = data.find(c => c.code === pendingLivreurCode);
+    if (item) {
+      item.status = 'enroute';
+      item.livraison = { livreur, livreurPhone, dateEnvoi: new Date().toISOString() };
+      item.updatedAt = new Date().toISOString();
+      save(data);
+      queueSync(item.code);
+      renderTable();
+      renderClients();
+      updateCounter();
+      checkAExpedier();
+      toast(`✓ Colis confié à ${livreur}`);
+    }
+    closeLivreurModal();
+  }
+  function confirmLivraisonTerminee(code) {
+    if (!confirm('Confirmer que ce colis a bien été livré au client ?')) return;
+    const data = load();
+    const item = data.find(c => c.code === code);
+    if (item) {
+      item.status = 'livre';
+      const dateLivree = new Date().toISOString();
+      item.livraison = Object.assign({}, item.livraison, { dateLivree });
+      item.updatedAt = new Date().toISOString();
+      save(data);
+      queueSync(item.code);
+      renderTable();
+      renderClients();
+      updateCounter();
+      checkAExpedier();
+      toast('✓ Livraison confirmée');
+      if (item.phone) sendLivraisonWhatsApp(item);
+    }
+  }
+
+  // ── Clients view ──────────────────────────────
+  function getClients() {
+    const data = load();
+    const map = {};
+    data.forEach(c => {
+      const key = clientKey(c.name, c.phone);
+      if (!map[key]) map[key] = { name: c.name, phone: c.phone||'', colis: [] };
+      map[key].colis.push(c);
+    });
+    return Object.values(map).sort((a,b) => a.name.localeCompare(b.name));
+  }
+
+  function renderClients() {
+    const q = (document.getElementById('clientSearchInput').value||'').toLowerCase();
+    let clients = getClients();
+    if (q) clients = clients.filter(c => c.name.toLowerCase().includes(q) || c.phone.includes(q));
+    const grid = document.getElementById('clientGrid');
+    if (!clients.length) {
+      grid.innerHTML = `<div class="empty-state"><div class="icon">👤</div>${q?'Aucun client trouvé':'Aucun client enregistré'}</div>`;
+      return;
+    }
+    grid.innerHTML = `<div class="client-grid">${clients.map(cl => {
+      const open   = cl.colis.filter(c => !['livre','retire'].includes(c.status)).length;
+      const done   = cl.colis.filter(c => ['livre','retire'].includes(c.status)).length;
+      const total  = cl.colis.length;
+      return `<div class="client-card" onclick="openClientModal('${esc(cl.name)}','${esc(cl.phone)}')">
+        <div class="cn">${cl.name}</div>
+        <div class="cp">${cl.phone||'—'}</div>
+        <div class="cstats">
+          <span class="cstat cstat-total">${total} colis</span>
+          ${open  ? `<span class="cstat cstat-open">${open} en cours</span>` : ''}
+          ${done  ? `<span class="cstat cstat-done">${done} terminés</span>` : ''}
+        </div>
+      </div>`;
+    }).join('')}</div>`;
+  }
+
+  // ── Client Modal ──────────────────────────────
+  function openClientModal(name, phone) {
+    document.getElementById('modalClientName').textContent = name;
+    document.getElementById('modalClientPhone').textContent = phone || '—';
+    const colis = load().filter(c => clientKey(c.name,c.phone) === clientKey(name,phone))
+                        .sort((a,b) => new Date(b.date)-new Date(a.date));
+    const tl = document.getElementById('modalTimeline');
+    if (!colis.length) { tl.innerHTML = '<p style="color:var(--muted)">Aucun colis.</p>'; }
+    else {
+    // Cache lightbox pour la modal
+    lightboxCache = [];
+    colis.forEach(c => {
+      if (c.photos) c.photos.forEach(p => lightboxCache.push(p));
+      if (c.bordereau) lightboxCache.push(c.bordereau);
+      if (c.retrait && c.retrait.signature) lightboxCache.push(c.retrait.signature);
+    });
+
+    tl.innerHTML = colis.map((c,i) => `
+        <div class="tl-item">
+          <div class="tl-dot-wrap">
+            <div class="tl-dot" style="background:${c.status==='retire'?'#9b59b6':c.status==='livre'?'#27ae60':'var(--gold)'}"></div>
+            ${i < colis.length-1 ? `<div class="tl-line" style="flex:1"></div>` : ''}
+          </div>
+          <div class="tl-content">
+            <div class="tl-code">${c.code}</div>
+            <div class="tl-meta">${formatDate(c.date)} · ${STATUS_LABELS[c.status]||c.status}</div>
+            ${c.ref ? `<div class="tl-ref"><strong>${c.ref}</strong></div>` : ''}
+            ${c.agence ? `<div class="tl-retrait" style="color:#08486b;background:#e8f2fa">🚌 ${c.agence}${c.ville?' → '+c.ville:''}</div>` : ''}
+            ${c.desc ? `<div style="font-size:12px;color:var(--muted);margin:4px 0 6px;line-height:1.5">${c.desc}</div>` : ''}
+            ${c.photos && c.photos.length ? `<div class="photo-previews" style="margin:8px 0">${c.photos.map(p => {
+              const idx = lightboxCache.indexOf(p);
+              return `<div class="photo-thumb-wrap"><img class="photo-thumb" src="${p}" onclick="openLightboxIdx('cache',${idx})" /></div>`;
+            }).join('')}</div>` : ''}
+            ${c.bordereau ? `<div style="margin:8px 0"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">📄 Bordereau d'expédition</div><div class="photo-thumb-wrap"><img class="photo-thumb" src="${c.bordereau}" onclick="openLightboxIdx('cache',${lightboxCache.indexOf(c.bordereau)})" /></div></div>` : ''}
+            ${c.livraison && c.livraison.livreur ? `<div class="tl-retrait" style="color:#4527a0;background:#f1ecff">🚚 Confié à <strong>${c.livraison.livreur}</strong> · 📞 ${c.livraison.livreurPhone}${c.livraison.dateLivree?' · livré le '+formatDateTime(c.livraison.dateLivree):''}</div>` : ''}
+            ${c.retrait ? `<div class="tl-retrait">🛍 Retiré le ${formatDateTime(c.retrait.date)} par <strong>${c.retrait.vendeur}</strong> · 📞 ${c.retrait.vendeurPhone||'—'}${c.retrait.note?' — '+c.retrait.note:''}</div>` : ''}
+            ${c.retrait && c.retrait.signature ? `<div style="margin:8px 0"><div style="font-size:11px;color:var(--muted);margin-bottom:4px">🖊 Signature du client</div><div class="photo-thumb-wrap"><img class="photo-thumb" style="object-fit:contain;background:#fff" src="${c.retrait.signature}" onclick="openLightboxIdx('cache',${lightboxCache.indexOf(c.retrait.signature)})" /></div></div>` : ''}
+            ${c.note ? `<div class="tl-note">${c.note}</div>` : ''}
+            <div class="tl-actions">
+              <button class="btn btn-outline btn-sm" onclick="copyRowCode('${esc(c.code)}')">Copier code</button>
+              <button class="btn btn-outline btn-sm" style="color:#25D366;border-color:rgba(37,211,102,0.4)" onclick="copyRowSMS('${esc(c.code)}')">WhatsApp</button>
+              ${(() => { const btn = statusActionButton(c); return btn ? btn.replace('onclick="', 'onclick="closeModal();') : ''; })()}
+            </div>
+          </div>
+        </div>`).join('');
+    }
+    document.getElementById('clientModal').classList.add('open');
+  }
+  function closeModal() { document.getElementById('clientModal').classList.remove('open'); }
+
+  // close modals on overlay click
+  document.getElementById('clientModal').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
+  document.getElementById('retraitModal').addEventListener('click', function(e){ if(e.target===this) closeRetraitModal(); });
+  document.getElementById('expedieModal').addEventListener('click', function(e){ if(e.target===this) closeExpedieModal(); });
+  document.getElementById('livreurModal').addEventListener('click', function(e){ if(e.target===this) closeLivreurModal(); });
+
+  // ── Init ──────────────────────────────
+  checkAccessGate();
+</script>
+</body>
+</html>
